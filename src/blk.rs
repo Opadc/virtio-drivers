@@ -35,9 +35,8 @@ impl VirtIOBlk<'_> {
             config.capacity.read() / 2
         );
 
-        let queue = VirtQueue::new(header, 0, 16)?;
+        let queue = VirtQueue::new(header, 0, 128)?;
         header.finish_init();
-
         Ok(VirtIOBlk {
             header,
             queue,

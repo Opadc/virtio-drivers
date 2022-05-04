@@ -46,7 +46,6 @@ impl VirtQueue<'_> {
         let layout = VirtQueueLayout::new(size);
         // alloc continuous pages
         let dma = DMA::new(layout.size / PAGE_SIZE)?;
-
         header.queue_set(idx as u32, size as u32, PAGE_SIZE as u32, dma.pfn());
 
         let desc =
@@ -110,6 +109,7 @@ impl VirtQueue<'_> {
         }
         self.num_used += (inputs.len() + outputs.len()) as u16;
 
+        log::debug!("queue size: {} availd_idx: {}", self.queue_size, self.avail_idx);
         let avail_slot = self.avail_idx & (self.queue_size - 1);
         self.avail.ring[avail_slot as usize].write(head);
 
@@ -238,7 +238,7 @@ struct AvailRing {
     flags: Volatile<u16>,
     /// A driver MUST NOT decrement the idx.
     idx: Volatile<u16>,
-    ring: [Volatile<u16>; 32], // actual size: queue_size
+    ring: [Volatile<u16>; 128], // actual size: queue_size
     used_event: Volatile<u16>, // unused
 }
 
@@ -249,7 +249,7 @@ struct AvailRing {
 struct UsedRing {
     flags: Volatile<u16>,
     idx: Volatile<u16>,
-    ring: [UsedElem; 32],       // actual size: queue_size
+    ring: [UsedElem; 128],       // actual size: queue_size
     avail_event: Volatile<u16>, // unused
 }
 
